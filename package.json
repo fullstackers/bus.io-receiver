@@ -1,14 +1,14 @@
 {
-  "name": "skeleton",
-  "version": "0.0.0",
-  "description": "A skeleton for turbonetix projects",
+  "name": "bus.io-receiver",
+  "version": "0.0.0-alpha",
+  "description": "A receiver is where middleware is attached to handle messages.",
   "main": "index.js",
   "scripts": {
     "test": "grunt"
   },
   "repository": {
     "type": "git",
-    "url": "git://github.com/turbonetix/skeleton.git"
+    "url": "git://github.com/turbonetix/bus.io-receiver.git"
   },
   "keywords": [
     "bus.io",
@@ -18,9 +18,9 @@
   "author": "Nathan G. Romano",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/turbonetix/skeleton/issues"
+    "url": "https://github.com/turbonetix/bus.io-receiver/issues"
   },
-  "homepage": "https://github.com/turbonetix/skeleton",
+  "homepage": "https://github.com/turbonetix/bus.io-receiver",
   "devDependencies": {
     "sandboxed-module": "^1.0.0",
     "coffee-script": "^1.7.1",

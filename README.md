@@ -1,10 +1,10 @@
-[![Build Status](https://travis-ci.org/turbonetix/skeleton.svg?branch=master)](https://travis-ci.org/turbonetix/skeleton)
-[![NPM version](https://badge.fury.io/js/skeleton.svg)](http://badge.fury.io/js/skeleton)
-[![David DM](https://david-dm.org/turbonetix/skeleton.png)](https://david-dm.org/turbonetix/skeleton.png)
+[![Build Status](https://travis-ci.org/turbonetix/bus.io-receiver.svg?branch=master)](https://travis-ci.org/turbonetix/bus.io-receiver)
+[![NPM version](https://badge.fury.io/js/bus.io-receiver.svg)](http://badge.fury.io/js/bus.io-receiver)
+[![David DM](https://david-dm.org/turbonetix/bus.io-receiver.png)](https://david-dm.org/turbonetix/bus.io-receiver.png)
 
 ![Bus.IO](https://raw.github.com/turbonetix/bus.io/master/logo.png)
 
-A skeleton we use for starting our projects!
+A bus.io-receiver is where middleware is attached to handle messages.
 
 # Installation and Environment Setup
 
@@ -12,11 +12,11 @@ Install node.js (See download and install instructions here: http://nodejs.org/)
 
 Clone this repository
 
-    > git clone git@github.com:turbonetix/skeleton.git
+    > git clone git@github.com:turbonetix/bus.io-receiver.git
 
 cd into the directory and install the dependencies
 
-    > cd skeleton
+    > cd bus.io-receiver
     > npm install && npm shrinkwrap --dev
 
 # Running Tests
