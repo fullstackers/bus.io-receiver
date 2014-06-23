@@ -11,7 +11,7 @@ A bus.io-receiver is where middleware is attached to handle messages.
 ##Receiver
 
 ```javascript
-var receiver = require('bus.io-receiver)();
+var receiver = require('bus.io-receiver')();
 ```
 
 ###Receiver#onReceive(message:Message, [done:Function])
@@ -132,7 +132,7 @@ The `received` event is triggered whenever a `message` has been pushed through t
 
 ```javascript
 receiver.on('received', function (msg) {
-  console.log(The message has been received %s', msg.id());
+  console.log('The message has been received %s', msg.id());
 });
 ```
 
