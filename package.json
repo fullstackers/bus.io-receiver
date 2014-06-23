@@ -1,6 +1,6 @@
 {
   "name": "bus.io-receiver",
-  "version": "0.0.0",
+  "version": "0.0.1",
   "description": "A receiver is where middleware is attached to handle messages.",
   "main": "index.js",
   "scripts": {
@@ -12,7 +12,7 @@
   },
   "keywords": [
     "bus.io",
-    "monitor",
+    "receiver",
     "middleware"
   ],
   "author": "Nathan G. Romano",
