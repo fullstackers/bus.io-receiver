@@ -1,6 +1,6 @@
 {
   "name": "bus.io-receiver",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "description": "A receiver is where middleware is attached to handle messages.",
   "main": "index.js",
   "scripts": {
@@ -29,7 +29,7 @@
     "grunt": "^0.4.5"
   },
   "dependencies": {
-    "bus.io-common": "0.0.7",
+    "bus.io-common": "^0.1",
     "debug": "^1.0.2",
     "async": "^0.9.0"
   }
