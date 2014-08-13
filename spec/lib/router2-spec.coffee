@@ -69,6 +69,20 @@ describe.only 'Router', ->
 
           When -> @wrap 1, 2
           And -> expect(@fn).toHaveBeenCalledWith 1
+  
+    describe '#_event(name:String)', ->
+
+      Given -> @name = 'some event'
+      When -> @res = @router._event @name
+      Then -> expect(typeof @res).toBe 'function'
+
+      describe 'invocation', ->
+
+        Given -> spyOn(EventEmitter.prototype.emit,'apply').andCallThrough()
+        Given -> spyOn(@router,'emit').andCallThrough()
+        When -> @res 1
+        Then -> expect(@router.emit).toHaveBeenCalledWith 'done', @name, [1]
+        And -> expect(EventEmitter.prototype.emit.apply).toHaveBeenCalledWith @router, [@name]
         
   describe '#flatten', ->
 
