@@ -28,7 +28,7 @@ describe 'Router', ->
     Given -> @next = jasmine.createSpy('next')
     Given -> @end = jasmine.createSpy('end')
 
-    describe.only '#route(msg:Message, end:Function)', ->
+    describe '#route(msg:Message, end:Function)', ->
 
       When -> @router.route @msg, @end
       Then -> expect(@end).toHaveBeenCalled()
@@ -39,6 +39,7 @@ describe 'Router', ->
       Given -> @sock = new EventEmitter()
       When -> @router.route @msg, @sock, @end
       Then -> expect(@end).toHaveBeenCalled()
+      And -> expect(EventEmitter.prototype.emit.apply).toHaveBeenCalledWith @router, ['next', @msg, @sock]
 
     describe '#use(fn:Function)', ->
 

@@ -7,7 +7,7 @@ describe 'Receiver', ->
   Given -> @Route = requireSubject 'lib/route', {
     'bus.io-common': Common
   }
-  Given -> @Router = requireSubject 'lib/router', {
+  Given -> @Router = requireSubject 'lib/router2', {
     'bus.io-common': Common
     './route': @Route
   }
@@ -28,7 +28,7 @@ describe 'Receiver', ->
   ]
 
   Given -> @Receiver = requireSubject 'lib/receiver', {
-    './router': @Router
+    './router2': @Router
     'bus.io-common': Common
   }
 
