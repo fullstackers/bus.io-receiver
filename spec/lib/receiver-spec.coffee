@@ -4,12 +4,8 @@ Message = Common.Message
 
 describe 'Receiver', ->
 
-  Given -> @Route = requireSubject 'lib/route', {
+  Given -> @Router = requireSubject 'lib/router', {
     'bus.io-common': Common
-  }
-  Given -> @Router = requireSubject 'lib/router2', {
-    'bus.io-common': Common
-    './route': @Route
   }
   
   Given -> @handlers = [
@@ -28,7 +24,7 @@ describe 'Receiver', ->
   ]
 
   Given -> @Receiver = requireSubject 'lib/receiver', {
-    './router2': @Router
+    './router': @Router
     'bus.io-common': Common
   }
 
