@@ -4,8 +4,9 @@ Message = Common.Message
 Controller = Common.Controller
 Switched = require 'switched'
 
-describe.only 'Router', ->
+describe 'Router', ->
 
+  Given -> spyOn(EventEmitter.prototype.emit,'apply').andCallThrough()
   Given -> @Router = requireSubject 'lib/router2', {
     'bus.io-common': Common
     'switched': Switched
@@ -16,29 +17,28 @@ describe.only 'Router', ->
     When -> @res = @Router()
     Then -> expect(@res instanceof @Router).toBe true
     And -> expect(@res instanceof EventEmitter).toBe true
+    And -> expect(@res._router.fns()[0][1]).toBe @res._attachEvents
 
   describe 'prototype', ->
 
     Given -> @router = @Router()
-    Given -> @fn = jasmine.createSpy()
+    Given -> spyOn(@router,'emit').andCallThrough()
+    Given -> @fn = jasmine.createSpy('fn')
     Given -> @msg = Message()
-    Given -> @end = jasmine.createSpy()
+    Given -> @next = jasmine.createSpy('next')
+    Given -> @end = jasmine.createSpy('end')
 
-    describe '#route(msg:Message, end:Function)', ->
+    describe.only '#route(msg:Message, end:Function)', ->
 
       When -> @router.route @msg, @end
-      Then -> expect(@end).toHaveBeenCalledWith null, jasmine.any(Controller)
-      And -> expect(@end.mostRecentCall.args[0]).toBe null
-      And -> expect(@end.mostRecentCall.args[1].message).toBe @msg
+      Then -> expect(@end).toHaveBeenCalled()
+      And -> expect(EventEmitter.prototype.emit.apply).toHaveBeenCalledWith @router, ['next', @msg]
 
     describe '#route(msg:Message, sock:Socket, end:Function)', ->
 
       Given -> @sock = new EventEmitter()
       When -> @router.route @msg, @sock, @end
-      Then -> expect(@end).toHaveBeenCalledWith null, jasmine.any(Controller), @sock
-      And -> expect(@end.mostRecentCall.args[0]).toBe null
-      And -> expect(@end.mostRecentCall.args[1].message).toBe @msg
-      And -> expect(@end.mostRecentCall.args[2]).toBe @sock
+      Then -> expect(@end).toHaveBeenCalled()
 
     describe '#use(fn:Function)', ->
 
@@ -73,16 +73,31 @@ describe.only 'Router', ->
     describe '#_event(name:String)', ->
 
       Given -> @name = 'some event'
-      When -> @res = @router._event @name
+      When -> @res = @router._event @name, @end
       Then -> expect(typeof @res).toBe 'function'
 
       describe 'invocation', ->
 
-        Given -> spyOn(EventEmitter.prototype.emit,'apply').andCallThrough()
-        Given -> spyOn(@router,'emit').andCallThrough()
         When -> @res 1
         Then -> expect(@router.emit).toHaveBeenCalledWith 'done', @name, [1]
         And -> expect(EventEmitter.prototype.emit.apply).toHaveBeenCalledWith @router, [@name]
+        And -> expect(@end).toHaveBeenCalled()
+
+    describe '#_attachEvents(msg:Controller)', ->
+
+      Given -> @deliver = 'deliver'
+      Given -> @respond = 'respond'
+      Given -> @consume = 'consume'
+      Given -> @controller = Controller @msg
+      Given -> spyOn(@router, '_event').andCallThrough()
+      When -> @router._attachEvents @controller, @next, @end
+      Then -> expect(@next).toHaveBeenCalled()
+      And -> expect(@router._event.argsForCall[0]).toEqual [@deliver, @end]
+      And -> expect(@controller.listeners(@deliver).length).toBe 1
+      And -> expect(@router._event.argsForCall[1]).toEqual [@respond, @end]
+      And -> expect(@controller.listeners(@respond).length).toBe 1
+      And -> expect(@router._event.argsForCall[2]).toEqual [@consume, @end]
+      And -> expect(@controller.listeners(@consume).length).toBe 1
         
   describe '#flatten', ->
 
