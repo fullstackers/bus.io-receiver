@@ -26,9 +26,7 @@ describe.only 'Router', ->
       Given -> @msg = Message()
       Given -> @end = jasmine.createSpy()
       When -> @router.route @msg, @end
-      Then ->
-        expect(@end).toHaveBeenCalledWith null, jasmine.any(Controller)
-        console.log @end
+      Then -> expect(@end).toHaveBeenCalledWith null, jasmine.any(Controller)
       And -> expect(@end.mostRecentCall.args[0]).toBe null
       And -> expect(@end.mostRecentCall.args[1].message).toBe @msg
 
@@ -38,9 +36,7 @@ describe.only 'Router', ->
       Given -> @sock = new EventEmitter()
       Given -> @end = jasmine.createSpy()
       When -> @router.route @msg, @sock, @end
-      Then ->
-        expect(@end).toHaveBeenCalledWith null, jasmine.any(Controller), @sock
-        console.log @end
+      Then -> expect(@end).toHaveBeenCalledWith null, jasmine.any(Controller), @sock
       And -> expect(@end.mostRecentCall.args[0]).toBe null
       And -> expect(@end.mostRecentCall.args[1].message).toBe @msg
       And -> expect(@end.mostRecentCall.args[2]).toBe @sock
