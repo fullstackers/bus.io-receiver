@@ -20,11 +20,12 @@ describe.only 'Router', ->
   describe 'prototype', ->
 
     Given -> @router = @Router()
+    Given -> @fn = jasmine.createSpy()
+    Given -> @msg = Message()
+    Given -> @end = jasmine.createSpy()
 
     describe '#route(msg:Message, end:Function)', ->
 
-      Given -> @msg = Message()
-      Given -> @end = jasmine.createSpy()
       When -> @router.route @msg, @end
       Then -> expect(@end).toHaveBeenCalledWith null, jasmine.any(Controller)
       And -> expect(@end.mostRecentCall.args[0]).toBe null
@@ -32,11 +33,46 @@ describe.only 'Router', ->
 
     describe '#route(msg:Message, sock:Socket, end:Function)', ->
 
-      Given -> @msg = Message()
       Given -> @sock = new EventEmitter()
-      Given -> @end = jasmine.createSpy()
       When -> @router.route @msg, @sock, @end
       Then -> expect(@end).toHaveBeenCalledWith null, jasmine.any(Controller), @sock
       And -> expect(@end.mostRecentCall.args[0]).toBe null
       And -> expect(@end.mostRecentCall.args[1].message).toBe @msg
       And -> expect(@end.mostRecentCall.args[2]).toBe @sock
+
+    describe '#use(fn:Function)', ->
+
+      Given -> @wrap = @router._wrap @fn
+      Given -> spyOn(@Router,'flatten').andCallThrough()
+      Given -> spyOn(@router,'_wrap').andReturn @wrap
+      Given -> spyOn(@router._router,'use').andCallThrough()
+      When -> @res = @router.use @fn
+      Then -> expect(@res).toBe @router
+      And -> expect(@Router.flatten).toHaveBeenCalled()
+      And -> expect(@router._wrap).toHaveBeenCalledWith @fn
+      And -> expect(@router._router.use).toHaveBeenCalledWith @wrap
+
+    describe '#_wrap(fn:Function)', ->
+
+      context 'unwrapped', ->
+
+        When -> @res = @router._wrap @fn
+        Then -> expect(@res.fn).toBe @fn
+
+      context 'wrapped', ->
+
+        Given -> @wrap = @router._wrap @fn
+        When -> @res = @router._wrap @wrap
+        Then -> expect(@res).toBe @wrap
+
+        context 'invocation', ->
+
+          When -> @wrap 1, 2
+          And -> expect(@fn).toHaveBeenCalledWith 1
+        
+  describe '#flatten', ->
+
+    Given -> @a = ['a', ['b', 'c', ['d', 'e'], 'f'], 'g']
+    When -> @res = @Router.flatten @a
+    Then -> expect(@res).toEqual ['a', 'b', 'c', 'd', 'e', 'f', 'g']
+
