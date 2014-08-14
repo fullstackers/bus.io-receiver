@@ -34,6 +34,15 @@ describe 'Router', ->
       Then -> expect(@end).toHaveBeenCalled()
       And -> expect(EventEmitter.prototype.emit.apply).toHaveBeenCalledWith @router, ['next', @msg]
 
+    describe.only '#route(err:Error, msg:Message, end:Function)', ->
+
+      Given -> @err = new Error
+      Given -> @router.on 'error', (err) ->
+      Given -> @router.use (msg, next) => next @err
+      When -> @router.route @msg, @end
+      Then -> expect(@end).toHaveBeenCalled()
+      And -> expect(EventEmitter.prototype.emit.apply).toHaveBeenCalledWith @router, ['error', @err, @msg]
+
     describe '#route(msg:Message, sock:Socket, end:Function)', ->
 
       Given -> @sock = new EventEmitter()
@@ -99,7 +108,7 @@ describe 'Router', ->
       And -> expect(@controller.listeners(@respond).length).toBe 1
       And -> expect(@router._event.argsForCall[2]).toEqual [@consume, @end]
       And -> expect(@controller.listeners(@consume).length).toBe 1
-        
+
   describe '#flatten', ->
 
     Given -> @a = ['a', ['b', 'c', ['d', 'e'], 'f'], 'g']
