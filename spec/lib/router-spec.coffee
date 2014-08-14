@@ -34,7 +34,7 @@ describe 'Router', ->
       Then -> expect(@end).toHaveBeenCalled()
       And -> expect(EventEmitter.prototype.emit.apply).toHaveBeenCalledWith @router, ['next', @msg]
 
-    describe.only '#route(err:Error, msg:Message, end:Function)', ->
+    describe '#route(err:Error, msg:Message, end:Function)', ->
 
       Given -> @err = new Error
       Given -> @router.on 'error', (err) ->
