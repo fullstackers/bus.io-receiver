@@ -59,7 +59,7 @@ describe 'Router', ->
       And -> expect(@Router.flatten).toHaveBeenCalled()
       And -> expect(@router._router.use).toHaveBeenCalledWith @fn
   
-    describe.only '#_event(name:String)', ->
+    describe '#_event(name:String)', ->
 
       Given -> @name = 'some event'
       Given -> @args = [1, 2, 3]
@@ -70,8 +70,7 @@ describe 'Router', ->
 
         When -> @res()
         Then -> expect(@router.emit).toHaveBeenCalledWith 'done', @name, @args
-        And -> expect(EventEmitter.prototype.emit.apply).toHaveBeenCalledWith @router, 1, 2, 3
-        And -> console.log EventEmitter.prototype.emit.apply.mostRecentCall
+        And -> expect(EventEmitter.prototype.emit.apply).toHaveBeenCalledWith @router, [@name].concat @args
         And -> expect(@end).toHaveBeenCalled()
 
     describe '#_attachEvents(msg:Controller)', ->
@@ -83,11 +82,11 @@ describe 'Router', ->
       Given -> spyOn(@router, '_event').andCallThrough()
       When -> @router._attachEvents @controller, @next, @end
       Then -> expect(@next).toHaveBeenCalled()
-      And -> expect(@router._event.argsForCall[0]).toEqual [@deliver, @end]
+      And -> expect(@router._event.argsForCall[0]).toEqual [@deliver, @end, [@controller]]
       And -> expect(@controller.listeners(@deliver).length).toBe 1
-      And -> expect(@router._event.argsForCall[1]).toEqual [@respond, @end]
+      And -> expect(@router._event.argsForCall[1]).toEqual [@respond, @end, [@controller]]
       And -> expect(@controller.listeners(@respond).length).toBe 1
-      And -> expect(@router._event.argsForCall[2]).toEqual [@consume, @end]
+      And -> expect(@router._event.argsForCall[2]).toEqual [@consume, @end, [@controller]]
       And -> expect(@controller.listeners(@consume).length).toBe 1
 
   describe '#flatten', ->

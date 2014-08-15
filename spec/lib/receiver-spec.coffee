@@ -42,12 +42,9 @@ describe 'Receiver', ->
 
     describe '#use (fns:Array)', ->
 
-      Given -> spyOn(@instance.router(),['on']).andCallThrough()
+      Given -> spyOn(@instance.router(),['use']).andCallThrough()
       When -> @instance.use @handlers
-      Then -> expect(@instance.router().on).toHaveBeenCalled()
-      And -> expect(@instance.router().on.argsForCall[0]).toEqual ['*', @handlers[0]]
-      And -> expect(@instance.router().on.argsForCall[1]).toEqual ['*', @handlers[1]]
-      And -> expect(@instance.router().on.argsForCall[2]).toEqual ['*', @handlers[2]]
+      Then -> expect(@instance.router().use).toHaveBeenCalledWith @handlers
 
     describe '#onReceive (message:Message, socket:Scoket)', ->
 
