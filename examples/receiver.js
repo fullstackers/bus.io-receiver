@@ -5,6 +5,7 @@ receiver.on('error', function (err){
 });
 receiver.on('received', function (msg) {
   console.log('This receiver is finished and triggered the "received" event with the message %j', msg.data);
+  console.log('the args', arguments);
 });
 receiver.use(function (msg, next) {
   console.log('All messages go through this handler!', msg.action());

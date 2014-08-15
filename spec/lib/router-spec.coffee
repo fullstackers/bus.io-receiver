@@ -52,45 +52,26 @@ describe 'Router', ->
 
     describe '#use(fn:Function)', ->
 
-      Given -> @wrap = @router._wrap @fn
       Given -> spyOn(@Router,'flatten').andCallThrough()
-      Given -> spyOn(@router,'_wrap').andReturn @wrap
       Given -> spyOn(@router._router,'use').andCallThrough()
       When -> @res = @router.use @fn
       Then -> expect(@res).toBe @router
       And -> expect(@Router.flatten).toHaveBeenCalled()
-      And -> expect(@router._wrap).toHaveBeenCalledWith @fn
-      And -> expect(@router._router.use).toHaveBeenCalledWith @wrap
-
-    describe '#_wrap(fn:Function)', ->
-
-      context 'unwrapped', ->
-
-        When -> @res = @router._wrap @fn
-        Then -> expect(@res.fn).toBe @fn
-
-      context 'wrapped', ->
-
-        Given -> @wrap = @router._wrap @fn
-        When -> @res = @router._wrap @wrap
-        Then -> expect(@res).toBe @wrap
-
-        context 'invocation', ->
-
-          When -> @wrap 1, 2
-          And -> expect(@fn).toHaveBeenCalledWith 1
+      And -> expect(@router._router.use).toHaveBeenCalledWith @fn
   
-    describe '#_event(name:String)', ->
+    describe.only '#_event(name:String)', ->
 
       Given -> @name = 'some event'
-      When -> @res = @router._event @name, @end
+      Given -> @args = [1, 2, 3]
+      When -> @res = @router._event @name, @end, @args
       Then -> expect(typeof @res).toBe 'function'
 
       describe 'invocation', ->
 
-        When -> @res 1
-        Then -> expect(@router.emit).toHaveBeenCalledWith 'done', @name, [1]
-        And -> expect(EventEmitter.prototype.emit.apply).toHaveBeenCalledWith @router, [@name]
+        When -> @res()
+        Then -> expect(@router.emit).toHaveBeenCalledWith 'done', @name, @args
+        And -> expect(EventEmitter.prototype.emit.apply).toHaveBeenCalledWith @router, 1, 2, 3
+        And -> console.log EventEmitter.prototype.emit.apply.mostRecentCall
         And -> expect(@end).toHaveBeenCalled()
 
     describe '#_attachEvents(msg:Controller)', ->
