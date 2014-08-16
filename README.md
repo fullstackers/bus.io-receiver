@@ -6,6 +6,13 @@
 
 A bus.io-receiver is where middleware is attached to handle messages.
 
+# Features
+
+* The `Receiver` supports the same API as [switched](https://npmjs.org/package/switched "switched")
+which means.
+* Error handling
+* [express](https://npmjs.org/package/express "express") like routing
+
 #API
 
 ##Receiver
@@ -49,9 +56,15 @@ receiver.use(function (msg, sock, next) {
   msg.content(msg.content().toUpperCase());
 });
 
+receiver.on(function (err, msg, sock, next) {
+  console.log(err);
+  next();
+});
+
 receiver.on('received', function (msg, sock) {
   sock.emit(msg.action(), msg.content());
 });
+
 ```
 
 ###Receiver#use(path:String, fn:Function)
@@ -158,7 +171,6 @@ receiver.on('error', function (msg) {
   //die! (if you must)
   process.exit(1);
 });
-```
 
 # Installation and Environment Setup
 
