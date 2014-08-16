@@ -170,6 +170,7 @@ receiver.on('error', function (msg) {
   //die! (if you must)
   process.exit(1);
 });
+```
 
 # Installation and Environment Setup
 
