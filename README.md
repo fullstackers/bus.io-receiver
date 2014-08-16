@@ -6,6 +6,12 @@
 
 A bus.io-receiver is where middleware is attached to handle messages.
 
+# Features
+
+* The `Receiver` supports the same API as [switched](https://npmjs.org/package/switched "switched").
+* Error handling
+* [express](https://npmjs.org/package/express "express") like routing
+
 #API
 
 ##Receiver
@@ -14,7 +20,7 @@ A bus.io-receiver is where middleware is attached to handle messages.
 var receiver = require('bus.io-receiver')();
 ```
 
-###Receiver#onReceive(message:Message, [done:Function])
+###Receiver#onReceive(msg:Message, [done:Function])
 
 You use the `onReceive` method as handler for a *subject* that produces messages.  Optionally
 you may pass a callback `done` that will be executed right before the `receiver` triggers
@@ -25,12 +31,12 @@ var Message = require('bus.io-common').Message;
 var EventEmitter = require('events').EventEmitter;
 var producer = new EventEmitter();
 producer.on('message', receiver.onReceive);
-producer.emit('message', Message(), function (message) { 
+producer.emit('message', Message(), function (msg) { 
   console.log('message received');
 });
 ```
 
-###Receiver#onReceive(message:Message, [socket:Socket], [done:Function])
+###Receiver#onReceive(msg:Message, [sock:Socket], [done:Function])
 
 The `onReceive` method actually accepts multiple arguments.  Here we are passing in a `socket` as
 well as a `done` callback function.
@@ -49,9 +55,15 @@ receiver.use(function (msg, sock, next) {
   msg.content(msg.content().toUpperCase());
 });
 
+receiver.on(function (err, msg, sock, next) {
+  console.log(err);
+  next();
+});
+
 receiver.on('received', function (msg, sock) {
   sock.emit(msg.action(), msg.content());
 });
+
 ```
 
 ###Receiver#use(path:String, fn:Function)

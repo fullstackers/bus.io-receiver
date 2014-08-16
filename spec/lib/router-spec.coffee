@@ -1,137 +1,97 @@
 EventEmitter = require('events').EventEmitter
 Common = require 'bus.io-common'
 Message = Common.Message
-Controller = Common.Message
+Controller = Common.Controller
+Switched = require 'switched'
 
 describe 'Router', ->
 
-  Given -> @Point = requireSubject 'lib/point', { }
-  Given -> @Route = requireSubject 'lib/route', {
-    'bus.io-common': Common
-    './point': @Point
-  }
+  Given -> spyOn(EventEmitter.prototype.emit,'apply').andCallThrough()
   Given -> @Router = requireSubject 'lib/router', {
     'bus.io-common': Common
-    './route': @Route
-    './point': @Point
+    'switched': Switched
   }
 
-  describe '#()', ->
+  describe '#', ->
 
-    Then -> expect(@Router() instanceof @Router).toBe true
-    And -> expect(@Router() instanceof EventEmitter).toBe true
+    When -> @res = @Router()
+    Then -> expect(@res instanceof @Router).toBe true
+    And -> expect(@res instanceof EventEmitter).toBe true
+    And -> expect(@res._router.fns()[0][1]).toBe @res._attachEvents
 
   describe 'prototype', ->
 
-    Given -> @instance = @Router()
+    Given -> @router = @Router()
+    Given -> spyOn(@router,'emit').andCallThrough()
+    Given -> @fn = jasmine.createSpy('fn')
+    Given -> @msg = Message()
+    Given -> @next = jasmine.createSpy('next')
+    Given -> @end = jasmine.createSpy('end')
 
-    describe '#routes()', ->
+    describe '#route(msg:Message, end:Function)', ->
 
-      Then -> expect(@instance.routes()).toEqual {}
+      When -> @router.route @msg, @end
+      Then -> expect(@end).toHaveBeenCalled()
+      And -> expect(EventEmitter.prototype.emit.apply).toHaveBeenCalledWith @router, ['next', @msg]
 
-    describe '#routes(action:String)', ->
+    describe '#route(err:Error, msg:Message, end:Function)', ->
 
-      Given -> @action = 'say'
-      Then -> expect(@instance.routes(@action)).toEqual null
+      Given -> @err = new Error
+      Given -> @router.on 'error', (err) ->
+      Given -> @router.use (msg, next) => next @err
+      When -> @router.route @msg, @end
+      Then -> expect(@end).toHaveBeenCalled()
+      And -> expect(EventEmitter.prototype.emit.apply).toHaveBeenCalledWith @router, ['error', @err, @msg]
 
-    describe '#paths()', ->
+    describe '#route(msg:Message, sock:Socket, end:Function)', ->
 
-      Then -> expect(@instance.paths()).toEqual {}
+      Given -> @sock = new EventEmitter()
+      When -> @router.route @msg, @sock, @end
+      Then -> expect(@end).toHaveBeenCalled()
+      And -> expect(EventEmitter.prototype.emit.apply).toHaveBeenCalledWith @router, ['next', @msg, @sock]
 
-    describe '#paths(action:String="say")', ->
+    describe '#use(fn:Function)', ->
 
-      Given -> @action = 'say'
-      Then -> expect(@instance.paths(@action)).toEqual []
+      Given -> spyOn(@Router,'flatten').andCallThrough()
+      Given -> spyOn(@router._router,'use').andCallThrough()
+      When -> @res = @router.use @fn
+      Then -> expect(@res).toBe @router
+      And -> expect(@Router.flatten).toHaveBeenCalled()
+      And -> expect(@router._router.use).toHaveBeenCalledWith @fn
   
-    describe '#on', ->
-      
-      Given -> @fn = jasmine.createSpy 'fn'
-      Given -> @action = 'say'
-      Given -> spyOn(@instance,['emit']).andCallThrough()
+    describe '#_event(name:String)', ->
 
-      context '(path:Sring="say", fn:Function)', ->
+      Given -> @name = 'some event'
+      Given -> @args = [1, 2, 3]
+      When -> @res = @router._event @name, @end, @args
+      Then -> expect(typeof @res).toBe 'function'
 
-        When -> @instance.on @action, @fn
-        Then -> expect(@instance.paths(@action).length).toBe 1
-        And -> expect(@instance.paths(@action)[0] instanceof @Point).toBe true
-        And -> expect(@instance.paths(@action)[0].fn).toEqual @fn
-        And -> expect(@instance.paths(@action)[0].action).toEqual @action
-        And -> expect(@instance.paths(@action)[0].index).toEqual 0
-        And -> expect(@instance.emit).toHaveBeenCalledWith 'changed', @action
+      describe 'invocation', ->
 
-      context '(path:Sring="*")', ->
+        When -> @res()
+        Then -> expect(@router.emit).toHaveBeenCalledWith 'done', @name, @args
+        And -> expect(EventEmitter.prototype.emit.apply).toHaveBeenCalledWith @router, [@name].concat @args
+        And -> expect(@end).toHaveBeenCalled()
 
-        When -> @instance.on @action, @fn
-        Then -> expect(@instance.paths(@action).length).toBe 1
-        And -> expect(@instance.paths(@action)[0] instanceof @Point).toBe true
-        And -> expect(@instance.paths(@action)[0].fn).toEqual @fn
-        And -> expect(@instance.paths(@action)[0].action).toEqual @action
-        And -> expect(@instance.paths(@action)[0].index).toEqual 0
-        And -> expect(@instance.emit).toHaveBeenCalledWith 'changed', @action
+    describe '#_attachEvents(msg:Controller)', ->
 
-    describe '#getRoute (path:String="say")', ->
+      Given -> @deliver = 'deliver'
+      Given -> @respond = 'respond'
+      Given -> @consume = 'consume'
+      Given -> @controller = Controller @msg
+      Given -> spyOn(@router, '_event').andCallThrough()
+      When -> @router._attachEvents @controller, @next, @end
+      Then -> expect(@next).toHaveBeenCalled()
+      And -> expect(@router._event.argsForCall[0]).toEqual [@deliver, @end, [@controller]]
+      And -> expect(@controller.listeners(@deliver).length).toBe 1
+      And -> expect(@router._event.argsForCall[1]).toEqual [@respond, @end, [@controller]]
+      And -> expect(@controller.listeners(@respond).length).toBe 1
+      And -> expect(@router._event.argsForCall[2]).toEqual [@consume, @end, [@controller]]
+      And -> expect(@controller.listeners(@consume).length).toBe 1
 
-      Given -> @path = 'say'
-      When -> @route = @instance.getRoute @path
-      Then -> expect(@route instanceof @Route).toBe true
-      And -> expect(@route.listeners('consume')[0]).toBe @instance.onConsume
-      And -> expect(@route.listeners('deliver')[0]).toBe @instance.onDeliver
-      And -> expect(@route.listeners('respond')[0]).toBe @instance.onRespond
+  describe '#flatten', ->
 
-    describe '#onChange (action:String)', ->
-
-      Given -> @action = 'say'
-      Given -> @instance.routes @action, @Route()
-      When -> @instance.onChange @action
-      Then -> expect(@instance.routes(@action)).toBe undefined
-
-    describe '#onDeliver (message:Message)', ->
-
-      Given -> @event = 'deliver'
-      Given -> @message = Message()
-      Given -> spyOn(EventEmitter.prototype.emit,['apply']).andCallThrough()
-      When -> @instance.onDeliver @message
-      Then -> expect(EventEmitter.prototype.emit.apply).toHaveBeenCalledWith @instance, [@event, @message]
-
-    describe '#onRespond (message:Message)', ->
-
-      Given -> @event = 'respond'
-      Given -> @message = Message()
-      Given -> spyOn(EventEmitter.prototype.emit,['apply']).andCallThrough()
-      When -> @instance.onRespond @message
-      Then -> expect(EventEmitter.prototype.emit.apply).toHaveBeenCalledWith @instance, [@event, @message]
-
-    describe '#onConsume (message:Message)', ->
-
-      Given -> @event = 'consume'
-      Given -> @message = Message()
-      Given -> spyOn(EventEmitter.prototype.emit,['apply']).andCallThrough()
-      When -> @instance.onConsume @message
-      Then -> expect(EventEmitter.prototype.emit.apply).toHaveBeenCalledWith @instance, [@event, @message]
-
-    describe '#onNext (message:Message)', ->
-
-      Given -> @event = 'next'
-      Given -> @message = Message()
-      Given -> spyOn(EventEmitter.prototype.emit,['apply']).andCallThrough()
-      When -> @instance.onNext @message
-      Then -> expect(EventEmitter.prototype.emit.apply).toHaveBeenCalledWith @instance, [@event, @message]
-
-
-    describe '#deliver (message:Message)', ->
-
-      Given -> @done = jasmine.createSpy 'done'
-      Given -> @message = Message()
-      Given -> @route = @Route()
-      Given -> spyOn(@route,['process']).andCallThrough()
-      Given -> spyOn(@instance,['getRoute']).andReturn(@route)
-      Given -> spyOn(EventEmitter.prototype.emit,'apply').andCallThrough()
-      Given -> spyOn(@instance,'emit').andCallThrough()
-      When (done) -> @done = done; @instance.route @message, done
-      Then -> expect(@instance.getRoute).toHaveBeenCalledWith @message.action()
-      And -> expect(@route.process).toHaveBeenCalledWith @message, @done
-      And -> expect(EventEmitter.prototype.emit.apply).toHaveBeenCalledWith @route, ['next', @message]
-
-    describe '#deliver (message:null)', ->
-      Then -> expect(=> @instance.route null).toThrow new Error('message must be a Message')
+    Given -> @a = ['a', ['b', 'c', ['d', 'e'], 'f'], 'g']
+    When -> @res = @Router.flatten @a
+    Then -> expect(@res).toEqual ['a', 'b', 'c', 'd', 'e', 'f', 'g']
 
