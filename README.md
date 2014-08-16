@@ -8,8 +8,7 @@ A bus.io-receiver is where middleware is attached to handle messages.
 
 # Features
 
-* The `Receiver` supports the same API as [switched](https://npmjs.org/package/switched "switched")
-which means.
+* The `Receiver` supports the same API as [switched](https://npmjs.org/package/switched "switched").
 * Error handling
 * [express](https://npmjs.org/package/express "express") like routing
 
