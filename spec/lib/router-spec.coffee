@@ -32,7 +32,7 @@ describe 'Router', ->
 
       When -> @router.route @msg, @end
       Then -> expect(@end).toHaveBeenCalled()
-      And -> expect(EventEmitter.prototype.emit.apply).toHaveBeenCalledWith @router, ['next', @msg]
+      And -> expect(EventEmitter.prototype.emit.apply).toHaveBeenCalledWith @router, ['next', @msg, jasmine.any(Function)]
 
     describe '#route(err:Error, msg:Message, end:Function)', ->
 
@@ -41,14 +41,14 @@ describe 'Router', ->
       Given -> @router.use (msg, next) => next @err
       When -> @router.route @msg, @end
       Then -> expect(@end).toHaveBeenCalled()
-      And -> expect(EventEmitter.prototype.emit.apply).toHaveBeenCalledWith @router, ['error', @err, @msg]
+      And -> expect(EventEmitter.prototype.emit.apply).toHaveBeenCalledWith @router, ['error', @err, @msg, jasmine.any(Function)]
 
     describe '#route(msg:Message, sock:Socket, end:Function)', ->
 
       Given -> @sock = new EventEmitter()
       When -> @router.route @msg, @sock, @end
       Then -> expect(@end).toHaveBeenCalled()
-      And -> expect(EventEmitter.prototype.emit.apply).toHaveBeenCalledWith @router, ['next', @msg, @sock]
+      And -> expect(EventEmitter.prototype.emit.apply).toHaveBeenCalledWith @router, ['next', @msg, @sock, jasmine.any(Function)]
 
     describe '#use(fn:Function)', ->
 
@@ -62,7 +62,7 @@ describe 'Router', ->
     describe '#_event(name:String)', ->
 
       Given -> @name = 'some event'
-      Given -> @args = [1, 2, 3]
+      Given -> @args = [undefined, 2, 3]
       When -> @res = @router._event @name, @end, @args
       Then -> expect(typeof @res).toBe 'function'
 
