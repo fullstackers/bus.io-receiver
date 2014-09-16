@@ -30,7 +30,7 @@
   },
   "dependencies": {
     "bus.io-common": "^0.2",
-    "debug": "^1.0.2",
+    "debug": "^2.0",
     "switched": "^0.1.1"
   }
 }
